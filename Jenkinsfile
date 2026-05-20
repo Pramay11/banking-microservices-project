@@ -39,6 +39,22 @@ pipeline {
     }
 }
 
+        stage('OWASP Dependency Check') {
+    steps {
+
+        dir('account-service') {
+
+            sh '''
+            /opt/dependency-check/bin/dependency-check.sh \
+            --project "account-service" \
+            --scan . \
+            --format HTML \
+            --out dependency-check-report
+            '''
+        }
+    }
+}
+
         stage('Build Docker Image') {
             steps {
                 dir('account-service') {
