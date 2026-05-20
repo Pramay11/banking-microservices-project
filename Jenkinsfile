@@ -51,7 +51,7 @@ pipeline {
     steps {
 
         sh '''
-        trivy image --format table ${DOCKER_HUB}/$IMAGE_NAME:v1 \
+        trivy image \
         --timeout 20m \
         --severity HIGH,CRITICAL \
         --format table \
