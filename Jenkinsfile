@@ -8,12 +8,6 @@ pipeline {
 
     stages {
 
-        stage('Git Checkout') {
-            steps {
-                git 'https://github.com/Pramay11/banking-microservices-project.git'
-            }
-        }
-
         stage('Build Account Service') {
             steps {
                 dir('account-service') {
