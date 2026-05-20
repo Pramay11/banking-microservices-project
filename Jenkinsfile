@@ -7,7 +7,7 @@ pipeline {
     }
 
     environment {
-        DOCKER_HUB = 'YOUR_DOCKERHUB_USERNAME'
+        DOCKER_HUB = 'pramay11'
         IMAGE_NAME = 'account-service'
     }
 
