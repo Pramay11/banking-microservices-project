@@ -47,6 +47,16 @@ pipeline {
             }
         }
 
+        stage('Trivy Scan') {
+            steps {
+
+                 sh '''
+                 trivy image --exit-code 1 --severity CRITICAL account-service:v1
+                 '''
+
+            }
+        }
+
         stage('DockerHub Login') {
             steps {
                 withCredentials([usernamePassword(
