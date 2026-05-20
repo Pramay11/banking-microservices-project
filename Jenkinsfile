@@ -9,6 +9,7 @@ pipeline {
     environment {
         DOCKER_HUB = 'pramay11'
         IMAGE_NAME = 'account-service'
+        NVD_API_KEY = credentials('nvd-api-key')
     }
 
     stages {
@@ -42,15 +43,20 @@ pipeline {
         stage('OWASP Dependency Check') {
     steps {
 
-        dir('account-service') {
+        withCredentials([string(
+            credentialsId: 'nvd-api-key',
+            variable: 'NVD_API_KEY'
+        )]) {
 
-            sh '''
-            /opt/dependency-check/bin/dependency-check.sh \
-            --project "account-service" \
-            --scan . \
-            --format HTML \
-            --out dependency-check-report
-            '''
+            dependencyCheck additionalArguments: """
+                --scan ./account-service
+                --format HTML
+                --format XML
+                --nvdApiKey=$NVD_API_KEY
+            """,
+            odcInstallation: 'OWASP-DC'
+
+            dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
         }
     }
 }
