@@ -21,6 +21,24 @@ pipeline {
             }
         }
 
+        stage('SonarQube Analysis') {
+    steps {
+        dir('account-service') {
+
+            withSonarQubeEnv('sonar-server') {
+
+                sh '''
+                mvn sonar:sonar \
+                -Dsonar.projectKey=account-service \
+                -Dsonar.projectName=account-service \
+                -Dsonar.host.url=http://localhost:9000 \
+                -Dsonar.login=$SONAR_AUTH_TOKEN
+                '''
+            }
+        }
+    }
+}
+
         stage('Build Docker Image') {
             steps {
                 dir('account-service') {
