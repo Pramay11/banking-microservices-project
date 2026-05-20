@@ -10,7 +10,7 @@ pipeline {
 
         stage('Git Checkout') {
             steps {
-                git 'YOUR_GITHUB_REPOSITORY_URL'
+                git 'https://github.com/Pramay11/banking-microservices-project.git'
             }
         }
 
