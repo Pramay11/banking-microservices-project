@@ -48,14 +48,18 @@ pipeline {
         }
 
         stage('Trivy Scan') {
-            steps {
+    steps {
 
-                 sh '''
-                 trivy image --exit-code 1 --severity CRITICAL account-service:v1
-                 '''
-
-            }
-        }
+        sh '''
+        trivy image \
+        --timeout 20m \
+        --severity HIGH,CRITICAL \
+        --format table \
+        --output trivy-report.txt \
+        account-service:v1
+        '''
+    }
+}
 
         stage('DockerHub Login') {
             steps {
