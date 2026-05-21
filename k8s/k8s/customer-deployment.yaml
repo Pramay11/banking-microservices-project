@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: customer-service
+  namespace: banking-app
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: customer-service
+
+  template:
+    metadata:
+      labels:
+        app: customer-service
+
+    spec:
+      containers:
+      - name: customer-service
+        image: pramay11/customer-service:v1
+
+        ports:
+        - containerPort: 8082
+
+        env:
+        - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+          valueFrom:
+            configMapKeyRef:
+              name: banking-config
+              key: EUREKA_SERVER

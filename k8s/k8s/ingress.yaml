@@ -1,0 +1,43 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+
+metadata:
+  name: banking-ingress
+  namespace: banking-app
+
+spec:
+  rules:
+  - http:
+      paths:
+
+      - path: /accounts
+        pathType: Prefix
+        backend:
+          service:
+            name: api-gateway
+            port:
+              number: 8085
+
+      - path: /customers
+        pathType: Prefix
+        backend:
+          service:
+            name: api-gateway
+            port:
+              number: 8085
+
+      - path: /loans
+        pathType: Prefix
+        backend:
+          service:
+            name: api-gateway
+            port:
+              number: 8085
+
+      - path: /transactions
+        pathType: Prefix
+        backend:
+          service:
+            name: api-gateway
+            port:
+              number: 8085

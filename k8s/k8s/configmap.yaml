@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+
+metadata:
+  name: banking-config
+  namespace: banking-app
+
+data:
+  EUREKA_SERVER: "http://discovery-server:8761/eureka/"

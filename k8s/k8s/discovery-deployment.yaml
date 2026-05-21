@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: discovery-server
+  namespace: banking-app
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: discovery-server
+
+  template:
+    metadata:
+      labels:
+        app: discovery-server
+
+    spec:
+      containers:
+      - name: discovery-server
+        image: pramay11/discovery-server:v1
+
+        ports:
+        - containerPort: 8761
