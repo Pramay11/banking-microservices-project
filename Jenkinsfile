@@ -24,17 +24,11 @@ pipeline {
     stages {
 
         stage('Build Microservices') {
-
             steps {
-
                 script {
-
-                    for(service in services) {
-
+                    for (service in services) {
                         dir(service) {
-
                             sh 'mvn clean package'
-
                         }
                     }
                 }
@@ -42,21 +36,15 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
-
             steps {
-
                 script {
-
-                    for(service in services) {
-
+                    for (service in services) {
                         dir(service) {
-
                             withSonarQubeEnv('sonar-server') {
-
                                 sh """
-                                mvn sonar:sonar \
-                                -Dsonar.projectKey=${service} \
-                                -Dsonar.projectName=${service}
+                                    mvn sonar:sonar \
+                                    -Dsonar.projectKey=${service} \
+                                    -Dsonar.projectName=${service}
                                 """
                             }
                         }
@@ -66,35 +54,32 @@ pipeline {
         }
 
         stage('OWASP Dependency Check') {
-
             steps {
+                dependencyCheck(
+                    additionalArguments: """
+                        --scan .
+                        --format HTML
+                        --format XML
+                        --nvdApiKey=$NVD_API_KEY
+                        --data /var/lib/jenkins/owasp-cache
+                    """,
+                    odcInstallation: 'OWASP-DC'
+                )
 
-                dependencyCheck additionalArguments: """
-                    --scan .
-                    --format HTML
-                    --format XML
-                    --nvdApiKey=$NVD_API_KEY
-                    --data /var/lib/jenkins/owasp-cache
-                """,
-                odcInstallation: 'OWASP-DC'
-
-                dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+                dependencyCheckPublisher(
+                    pattern: '**/dependency-check-report.xml'
+                )
             }
         }
 
         stage('Build Docker Images') {
-
             steps {
-
                 script {
-
-                    for(service in services) {
-
+                    for (service in services) {
                         dir(service) {
-
                             sh """
-                            docker build \
-                            -t $DOCKER_HUB/${service}:v1 .
+                                docker build \
+                                -t $DOCKER_HUB/${service}:v1 .
                             """
                         }
                     }
@@ -103,19 +88,15 @@ pipeline {
         }
 
         stage('Trivy Scan') {
-
             steps {
-
                 script {
-
-                    for(service in services) {
-
+                    for (service in services) {
                         sh """
-                        trivy image \
-                        --timeout 20m \
-                        --severity HIGH,CRITICAL \
-                        --no-progress \
-                        $DOCKER_HUB/${service}:v1
+                            trivy image \
+                            --timeout 20m \
+                            --severity HIGH,CRITICAL \
+                            --no-progress \
+                            $DOCKER_HUB/${service}:v1
                         """
                     }
                 }
@@ -123,36 +104,53 @@ pipeline {
         }
 
         stage('DockerHub Login') {
-
             steps {
-
-                withCredentials([usernamePassword(
-                    credentialsId: 'dockerhub-creds',
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS'
-                )]) {
-
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub-creds',
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASS'
+                    )
+                ]) {
                     sh '''
-                    echo $DOCKER_PASS | docker login \
-                    -u $DOCKER_USER --password-stdin
+                        echo $DOCKER_PASS | docker login \
+                        -u $DOCKER_USER --password-stdin
                     '''
                 }
             }
         }
 
         stage('Push Docker Images') {
-
             steps {
-
                 script {
-
-                    for(service in services) {
-
+                    for (service in services) {
                         sh """
-                        docker push $DOCKER_HUB/${service}:v1
+                            docker push $DOCKER_HUB/${service}:v1
                         """
                     }
                 }
+            }
+        }
+
+        stage('EKS and Kubectl Configuration') {
+            steps {
+                sh '''
+                    aws eks update-kubeconfig \
+                    --region ap-south-1 \
+                    --name banking-eks
+                '''
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            when {
+                branch 'main'
+            }
+
+            steps {
+                sh '''
+                    kubectl apply -f k8s/
+                '''
             }
         }
     }

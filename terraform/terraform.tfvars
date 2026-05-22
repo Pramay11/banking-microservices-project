@@ -1,0 +1,1 @@
+ami_id = "ami-xxxxxxxxxxxxx"  // Replace with the actual AMI ID for Amazon Linux 2023 in your region
